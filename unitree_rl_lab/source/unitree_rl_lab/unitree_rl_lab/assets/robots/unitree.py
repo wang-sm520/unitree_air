@@ -56,7 +56,7 @@ class UnitreeUrdfFileCfg(sim_utils.UrdfFileCfg):
         gains=sim_utils.UrdfConverterCfg.JointDriveCfg.PDGainsCfg(stiffness=0, damping=0)
     )
     articulation_props = sim_utils.ArticulationRootPropertiesCfg(
-        enabled_self_collisions=True,
+        enabled_self_collisions=False,
         solver_position_iteration_count=8,
         solver_velocity_iteration_count=4,
     )
@@ -722,6 +722,9 @@ ARM_NEW_4_CFG = UnitreeArticulationCfg(
    spawn=UnitreeUrdfFileCfg(
         asset_path=f"{UNITREE_ROS_DIR}/robots/arm_new_description/urdf/arm_new.urdf",
     ),
+    # spawn=UnitreeUsdFileCfg(
+    #     usd_path=f"{UNITREE_ROS_DIR}/robots/arm_new_description/urdf/arm_new/arm_new.usd",
+    # ),
     init_state=ArticulationCfg.InitialStateCfg(
         pos=(0.0, 0.0, 0.85),  # 提高初始高度
         joint_pos={
@@ -729,8 +732,8 @@ ARM_NEW_4_CFG = UnitreeArticulationCfg(
             ".*_hip_pitch_joint": -0.1,
             ".*_hip_roll_joint": 0.0,
             ".*_hip_yaw_joint": 0.0,
-            ".*_knee_joint": 0.3,  # 伸直膝盖
-            ".*_ankle_pitch_joint": -0.2,  # 伸直脚踝
+            ".*_knee_joint": 0.3, 
+            ".*_ankle_pitch_joint": -0.2,  
             ".*_ankle_roll_joint": 0.0,
             # 手臂 - 自然下垂
             ".*_shoulder_pitch_joint": 0.3,
@@ -745,53 +748,56 @@ ARM_NEW_4_CFG = UnitreeArticulationCfg(
         # 固定关节 (waist_roll, torso - limit [0,0])
         "fixed_joints": ImplicitActuatorCfg(
             joint_names_expr=["waist_roll_joint", "torso_joint"],
-            stiffness=10000.0,  # 使用极高的刚度将其锁死
-            damping=1000.0,     # 使用极高的阻尼防止震荡
+            effort_limit_sim=50.0,  
+            velocity_limit_sim=20.0,
+            stiffness=40,
+            damping=5,      
+            armature=0.01,
         ),
-        # 腰部偏航 (waist_yaw_joint: Kp=13.0, Kd=1.5)
+        # 腰部偏航 (waist_yaw_joint: Kp=200 kd=5.0
         "waist_yaw": ImplicitActuatorCfg(
             joint_names_expr=["waist_yaw_joint"],
             effort_limit_sim=88,
             velocity_limit_sim=32.0,
-            stiffness=13.0,
-            damping=1.5,
+            stiffness=200,
+            damping=5,
             armature=0.01,
         ),
-        # 髋关节俯仰 (hip_pitch: Kp=25.0, Kd=2.0)
+        # 髋关节俯仰 (hip_pitch: Kp=100 Kd=2.0)
         # 注意: USD中左腿是 "a__left_hip_pitch_joint"，右腿是 "right_hip_pitch_joint"
         "hip_pitch": ImplicitActuatorCfg(
             joint_names_expr=["right_hip_pitch_joint", "a__left_hip_pitch_joint"],
             effort_limit_sim=88,
             velocity_limit_sim=32.0,
-            stiffness=25.0,
+            stiffness=100,
             damping=2.0,
             armature=0.01,
         ),
-        # 髋关节侧摆 (hip_roll: Kp=25.0, Kd=2.0)
+        # 髋关节侧摆 (hip_roll: Kp=100, Kd=2.0)
         "hip_roll": ImplicitActuatorCfg(
             joint_names_expr=[".*_hip_roll_joint"],
             effort_limit_sim=139,
             velocity_limit_sim=20.0,
-            stiffness=25.0,
+            stiffness=100,
             damping=2.0,
             armature=0.01,
         ),
-        # 髋关节偏航 (hip_yaw: Kp=6.5, Kd=1.0)
+        # 髋关节偏航 (hip_yaw: Kp=100, Kd=2.0)
         "hip_yaw": ImplicitActuatorCfg(
             joint_names_expr=[".*_hip_yaw_joint"],
             effort_limit_sim=88,
             velocity_limit_sim=32.0,
-            stiffness=6.5,
-            damping=1.0,
+            stiffness=100,
+            damping=2.0,
             armature=0.01,
         ),
-        # 膝关节 (knee: Kp=9.0, Kd=0.8)
+        # 膝关节 (knee: Kp=150, Kd=0.8)
         "knee": ImplicitActuatorCfg(
             joint_names_expr=[".*_knee_joint"],
             effort_limit_sim=139,
             velocity_limit_sim=20.0,
-            stiffness=9.0,
-            damping=0.8,
+            stiffness=150,
+            damping=4,
             armature=0.01,
         ),
         # 踝关节 (ankle_pitch/roll: Kp=6.5, Kd=0.8)
@@ -799,8 +805,8 @@ ARM_NEW_4_CFG = UnitreeArticulationCfg(
             joint_names_expr=[".*_ankle_pitch_joint", ".*_ankle_roll_joint"],
             effort_limit_sim=50,
             velocity_limit_sim=37.0,
-            stiffness=6.5,
-            damping=0.8,
+            stiffness=40,
+            damping=2,
             armature=0.01,
         ),
         # 肩关节俯仰 (shoulder_pitch: Kp=16.0, Kd=2.0)
@@ -808,8 +814,8 @@ ARM_NEW_4_CFG = UnitreeArticulationCfg(
             joint_names_expr=[".*_shoulder_pitch_joint"],
             effort_limit_sim=40,
             velocity_limit_sim=20.0,
-            stiffness=16.0,
-            damping=2.0,
+            stiffness=40,
+            damping=1,
             armature=0.01,
         ),
         # 肩关节侧摆 (shoulder_roll: Kp=20.0, Kd=2.0)
@@ -817,8 +823,8 @@ ARM_NEW_4_CFG = UnitreeArticulationCfg(
             joint_names_expr=[".*_shoulder_roll_joint"],
             effort_limit_sim=40,
             velocity_limit_sim=20.0,
-            stiffness=20.0,
-            damping=2.0,
+            stiffness=40,
+            damping=1,
             armature=0.01,
         ),
         # 肩关节偏航 (shoulder_yaw: Kp=5.0, Kd=0.5)
@@ -826,8 +832,8 @@ ARM_NEW_4_CFG = UnitreeArticulationCfg(
             joint_names_expr=[".*_shoulder_yaw_joint"],
             effort_limit_sim=20,
             velocity_limit_sim=30.0,
-            stiffness=5.0,
-            damping=0.5,
+            stiffness=40,
+            damping=1,
             armature=0.01,
         ),
         # 肘关节 (elbow: Kp=8.0, Kd=0.5)
@@ -835,8 +841,8 @@ ARM_NEW_4_CFG = UnitreeArticulationCfg(
             joint_names_expr=[".*_elbow_joint"],
             effort_limit_sim=20,
             velocity_limit_sim=30.0,
-            stiffness=8.0,
-            damping=0.5,
+            stiffness=40,
+            damping=1,
             armature=0.01,
         ),
         # 手腕 (wrist: Kp=5.0~6.0, Kd=0.5)
@@ -849,11 +855,11 @@ ARM_NEW_4_CFG = UnitreeArticulationCfg(
             effort_limit_sim=10,
             velocity_limit_sim=22.0,
             stiffness={
-                ".*_wrist_roll_joint": 5.0,
-                ".*_wrist_pitch_joint": 5.0,
-                ".*_wrist_yaw_joint": 6.0,
+                ".*_wrist_roll_joint": 40,
+                ".*_wrist_pitch_joint": 40,
+                ".*_wrist_yaw_joint": 40,
             },
-            damping=0.5,
+            damping=1,
             armature=0.01,
         ),
     },

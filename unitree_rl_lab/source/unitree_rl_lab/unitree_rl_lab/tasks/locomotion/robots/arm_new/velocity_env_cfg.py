@@ -44,7 +44,7 @@ class RobotSceneCfg(InteractiveSceneCfg):
     # ground terrain
     terrain = TerrainImporterCfg(
         prim_path="/World/ground",
-        terrain_type="generator",  # "plane", "generator"
+        terrain_type="plane",  # "plane", "generator"
         terrain_generator=COBBLESTONE_ROAD_CFG,  # None, ROUGH_TERRAINS_CFG
         max_init_terrain_level=COBBLESTONE_ROAD_CFG.num_rows - 1,
         collision_group=-1,
@@ -168,7 +168,7 @@ class CommandsCfg:
         heading_command=False,
         debug_vis=True,
         ranges=mdp.UniformLevelVelocityCommandCfg.Ranges(
-            lin_vel_x=(-0.1, 0.1), lin_vel_y=(-0.1, 0.1), ang_vel_z=(-0.1, 0.1)
+            lin_vel_x=(-0.5, 0.5), lin_vel_y=(-0.1, 0.1), ang_vel_z=(-0.1, 0.1)
         ),
         limit_ranges=mdp.UniformLevelVelocityCommandCfg.Ranges(
             lin_vel_x=(-0.5, 1.0), lin_vel_y=(-0.3, 0.3), ang_vel_z=(-0.2, 0.2)
@@ -254,14 +254,14 @@ class RewardsCfg:
     base_linear_velocity = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
     base_angular_velocity = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
     joint_vel = RewTerm(func=mdp.joint_vel_l2, weight=-0.001)
-    joint_acc = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-7)
+    joint_acc = RewTerm(func=mdp.joint_acc_l2, weight=-1.0e-6)     ##原来是-2.5e-7
     action_rate = RewTerm(func=mdp.action_rate_l2, weight=-0.05)
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5.0)
     energy = RewTerm(func=mdp.energy, weight=-2e-5)
 
     joint_deviation_arms = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.1,
+        weight=-0.5,   ###原来是-0.1
         params={
             "asset_cfg": SceneEntityCfg(
                 "robot",
@@ -350,7 +350,7 @@ class TerminationsCfg:
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
 
-    terrain_levels = CurrTerm(func=mdp.terrain_levels_vel)
+    # terrain_levels = CurrTerm(func=mdp.terrain_levels_vel)  # 纯平地模式下需要关闭地形升级课程
     lin_vel_cmd_levels = CurrTerm(mdp.lin_vel_cmd_levels)
 
 
