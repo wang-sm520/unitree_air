@@ -1,0 +1,29 @@
+# H1 MuJoCo deployment configuration
+
+# Policy path
+policy_path: "{PROJECT_ROOT}/deploy/pre_train/h1/exported/policy.onnx" # H1只训练了3500轮，只能站立，不会跟随速度命令，只用于验证sim2sim pipeline
+
+# MuJoCo XML model path
+xml_path: "{PROJECT_ROOT}/source/unitree_model/H1/mujoco/h1.xml"
+
+# Robot deploy parameters path
+robot_params_path: "{PROJECT_ROOT}/deploy/pre_train/h1/params/deploy.yaml"
+
+# Simulation parameters
+simulation_duration: 60.0
+simulation_dt: 0.002
+control_decimation: 10
+
+# Policy dimensions
+num_actions: 19
+num_obs: 68
+
+# Initial velocity command
+cmd_init: [1.0, 0.0, 0.0]
+
+# Gait period for gait_phase observation
+gait_period: 0.6
+
+# Use sensor observations (if false, will use perfect state instead)
+# 注意有些xml的actuator顺序和body顺序不一致，这时建议用sensor，使其与训练时顺序一致
+use_sensor: true

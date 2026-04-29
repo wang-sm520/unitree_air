@@ -1,0 +1,57 @@
+# ArmNew4 MuJoCo deployment configuration
+
+# Policy path
+policy_path: "/home/hpf/wsm/unitree_rl/unitree_rl_lab/logs/rsl_rl/unitree_lj_velocity/2026-04-27_18-54-25/exported/policy.onnx"
+# MuJoCo XML model path
+#xml_path: "{PROJECT_ROOT}/source/unitree_model/robot/output_mjcf/robot.xml"
+xml_path: "/home/hpf/wsm/unitree_rl/unitree_ros/robots/robot/output_mjcf/robot.xml"
+
+# Robot deploy parameters path
+
+robot_params_path: "/home/hpf/wsm/unitree_rl/unitree_rl_lab/logs/rsl_rl/unitree_lj_velocity/2026-04-27_18-54-25/params/deploy.yaml"
+
+# Simulation parameters
+simulation_duration: 60.0
+simulation_dt: 0.0001
+control_decimation: 200
+
+# Policy dimensions
+num_actions: 27
+num_obs: 450
+
+# Policy joint names in order (used to match MuJoCo actuators by name)
+joint_names: [
+  "waist_yaw_joint",
+  "right_shoulder_pitch_joint",
+  "right_shoulder_roll_joint",
+  "right_shoulder_yaw_joint",
+  "right_elbow_joint",
+  "right_wrist_roll_joint",
+  "right_wrist_yaw_joint",
+  "right_wrist_pitch_joint",
+  "left_shoulder_pitch_joint",
+  "left_shoulder_roll_joint",
+  "left_shoulder_yaw_joint",
+  "left_elbow_joint",
+  "left_wrist_roll_joint",
+  "left_wrist_yaw_joint",
+  "left_wrist_pitch_joint",
+  "right_hip_pitch_joint",
+  "right_hip_roll_joint",
+  "right_hip_yaw_joint",
+  "right_knee_joint",
+  "right_ankle_pitch_joint",
+  "right_ankle_roll_joint",
+  "left_hip_pitch_joint",
+  "left_hip_roll_joint",
+  "left_hip_yaw_joint",
+  "left_knee_joint",
+  "left_ankle_pitch_joint",
+  "left_ankle_roll_joint",
+]
+
+# Initial velocity command
+cmd_init: [0.1, 0.0, 0.0]
+
+# Gait period (not used in this policy)
+gait_period: null

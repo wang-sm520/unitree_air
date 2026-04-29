@@ -1,0 +1,254 @@
+<mujoco model="arm new 4">
+  <compiler angle="radian" meshdir="../meshes/" />
+  <asset>
+    <mesh name="pelvis_link.STL" file="pelvis_link.STL" />
+    <mesh name="waist_yaw_link.STL" file="waist_yaw_link.STL" />
+    <mesh name="waist_roll_link.STL" file="waist_roll_link.STL" />
+    <mesh name="torso_link.STL" file="torso_link.STL" />
+    <mesh name="right_shoulder_pitch_link.STL" file="right_shoulder_pitch_link.STL" />
+    <mesh name="right_shoulder_roll_link.STL" file="right_shoulder_roll_link.STL" />
+    <mesh name="right_shoulder_yaw_link.STL" file="right_shoulder_yaw_link.STL" />
+    <mesh name="right_elbow_link.STL" file="right_elbow_link.STL" />
+    <mesh name="right_wrist_roll_link.STL" file="right_wrist_roll_link.STL" />
+    <mesh name="right_wrist_yaw_link.STL" file="right_wrist_yaw_link.STL" />
+    <mesh name="right_wrist_pitch_link.STL" file="right_wrist_pitch_link.STL" />
+    <mesh name="left_shoulder_pitch_link.STL" file="left_shoulder_pitch_link.STL" />
+    <mesh name="left_shoulder_roll_link.STL" file="left_shoulder_roll_link.STL" />
+    <mesh name="left_shoulder_yaw_link.STL" file="left_shoulder_yaw_link.STL" />
+    <mesh name="left_elbow_link.STL" file="left_elbow_link.STL" />
+    <mesh name="left_wrist_roll_link.STL" file="left_wrist_roll_link.STL" />
+    <mesh name="left_wrist_yaw_link.STL" file="left_wrist_yaw_link.STL" />
+    <mesh name="left_wrist_pitch_link.STL" file="left_wrist_pitch_link.STL" />
+    <mesh name="right_hip_pitch_link.STL" file="right_hip_pitch_link.STL" />
+    <mesh name="right_hip_roll_link.STL" file="right_hip_roll_link.STL" />
+    <mesh name="right_hip_yaw_link.STL" file="right_hip_yaw_link.STL" />
+    <mesh name="right_knee_link.STL" file="right_knee_link.STL" />
+    <mesh name="right_ankle_pitch_link.STL" file="right_ankle_pitch_link.STL" />
+    <mesh name="right_ankle_roll_link.STL" file="right_ankle_roll_link.STL" />
+    <mesh name="left_hip_pitch_link.STL" file="left_hip_pitch_link.STL" />
+    <mesh name="left_hip_roll_link.STL" file="left_hip_roll_link.STL" />
+    <mesh name="left_hip_yaw_link.STL" file="left_hip_yaw_link.STL" />
+    <mesh name="left_knee_link.STL" file="left_knee_link.STL" />
+    <mesh name="left_ankle_pitch_link.STL" file="left_ankle_pitch_link.STL" />
+    <mesh name="left_ankle_roll_link.STL" file="left_ankle_roll_link.STL" />
+  </asset>
+
+  <default>
+    <geom rgba="0.8 0.6 0.4 1"/>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 10" dir="0 0 -1" diffuse="1 1 1"/>
+    <geom type="plane" size="5 5 0.1" rgba=".9 .9 .9 1"/>
+    <body name="pelvis_link" pos="0 0 1" euler="0 0 0">
+      <inertial pos="0 0 0" mass="2.59612258544044" diaginertia="0.0187 0.0044 0.0193"/>
+      <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="pelvis_link.STL" />
+      <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="pelvis_link.STL" />
+      <body name="waist_yaw_link" pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000">
+        <joint name="waist_yaw_joint" type="hinge" axis="0.0000 0.0000 1.0000" range="-0.001 0.001" limited="true" damping="0" frictionloss="0" armature="0.02"/>
+        <inertial pos="0 0 0" mass="1.34614103613669" diaginertia="0.0025 0.0025 0.0032"/>
+        <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="waist_yaw_link.STL" />
+        <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="waist_yaw_link.STL" />
+        <body name="waist_roll_link" pos="0.0000 0.0000 0.0960" euler="0.0000 0.0000 0.0000">
+          <joint name="waist_roll_joint" type="hinge" axis="-1.0000 0.0000 0.0000" range="-0.001 0.001" limited="true" damping="0" frictionloss="0" armature="0"/>
+          <inertial pos="0 0 0" mass="0.00904778684233861" diaginertia="1e-6 1e-6 1e-6"/>
+          <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="waist_roll_link.STL" />
+          <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="waist_roll_link.STL" />
+          <body name="torso_link" pos="0.0000 0.0000 0.0060" euler="0.0000 0.0000 0.0000">
+            <joint name="torso_joint" type="hinge" axis="0.0000 0.0000 1.0000" range="-0.001 0.001" limited="true" damping="0" frictionloss="0" armature="0"/>
+            <inertial pos="0 0 0" mass="15.0305076014071" diaginertia="0.3370 0.2728 0.1102"/>
+            <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="torso_link.STL" />
+            <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="torso_link.STL" />
+            <body name="right_shoulder_pitch_link" pos="0.0000 -0.1653 0.3727" euler="0.0000 0.0000 0.0000">
+              <joint name="right_shoulder_pitch_joint" type="hinge" axis="0.0000 1.0000 0.0000" range="-2 2" damping="0" frictionloss="0" armature="0.02"/>
+              <inertial pos="0 0 0" mass="0.756178654371522" diaginertia="0.0015 0.0008 0.0012"/>
+              <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_shoulder_pitch_link.STL" />
+              <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_shoulder_pitch_link.STL" />
+              <body name="right_shoulder_roll_link" pos="0.0000 -0.0780 0.0000" euler="0.0000 0.0000 0.0000">
+                <joint name="right_shoulder_roll_joint" type="hinge" axis="1.0000 0.0000 0.0000" range="-3.14 0" damping="0" frictionloss="0" armature="0.02"/>
+                <inertial pos="0 0 0" mass="0.44352" diaginertia="0.0004 0.0004 0.0005"/>
+                <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_shoulder_roll_link.STL" />
+                <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_shoulder_roll_link.STL" />
+                <body name="right_shoulder_yaw_link" pos="0.0000 0.0000 -0.1230" euler="0.0000 0.0000 0.0000">
+                  <joint name="right_shoulder_yaw_joint" type="hinge" axis="0.0000 0.0000 1.0000" range="-1.5 0.5" damping="0" frictionloss="0" armature="0.012"/>
+                  <inertial pos="0 0 0" mass="0.254258436472472" diaginertia="0.0002 0.0003 0.0003"/>
+                  <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_shoulder_yaw_link.STL" />
+                  <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_shoulder_yaw_link.STL" />
+                  <body name="right_elbow_link" pos="0.0000 0.0000 -0.0870" euler="0.0000 0.0000 0.0000">
+                    <joint name="right_elbow_joint" type="hinge" axis="0.0000 -1.0000 0.0000" range="-3 0" damping="0" frictionloss="0" armature="0.012"/>
+                    <inertial pos="0 0 0" mass="0.1836" diaginertia="0.0001 0.0001 0.0001"/>
+                    <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_elbow_link.STL" />
+                    <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_elbow_link.STL" />
+                    <body name="right_wrist_roll_link" pos="0.1025 0.0000 0.0000" euler="0.0000 0.0000 0.0000">
+                      <joint name="right_wrist_roll_joint" type="hinge" axis="-1.0000 0.0000 0.0000" range="-1 1" damping="0" frictionloss="0" armature="0.001"/>
+                      <inertial pos="0 0 0" mass="0.145450242074064" diaginertia="0.0001 0.0001 0.0001"/>
+                      <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_wrist_roll_link.STL" />
+                      <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_wrist_roll_link.STL" />
+                      <body name="right_wrist_yaw_link" pos="0.0355 0.0000 0.0000" euler="0.0000 0.0000 0.0000">
+                        <joint name="right_wrist_yaw_joint" type="hinge" axis="0.0000 0.0000 -1.0000" range="-1 1" damping="0" frictionloss="0" armature="0.001"/>
+                        <inertial pos="0 0 0" mass="0.161163703129156" diaginertia="0.0001 0.0001 0.0001"/>
+                        <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_wrist_yaw_link.STL" />
+                        <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_wrist_yaw_link.STL" />
+                        <body name="right_wrist_pitch_link" pos="0.0600 0.0000 0.0000" euler="0.0000 0.0000 0.0000">
+                          <joint name="right_wrist_pitch_joint" type="hinge" axis="0.0000 1.0000 0.0000" range="-0.5 0.5" damping="0" frictionloss="0" armature="0.001"/>
+                          <inertial pos="0 0 0" mass="1.404" diaginertia="0.0026 0.0037 0.0029"/>
+                          <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_wrist_pitch_link.STL" />
+                          <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_wrist_pitch_link.STL" />
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+            <body name="left_shoulder_pitch_link" pos="0.0000 0.1653 0.3727" euler="0.0000 0.0000 0.0000">
+              <joint name="left_shoulder_pitch_joint" type="hinge" axis="0.0000 1.0000 0.0000" range="-2 2" damping="0" frictionloss="0" armature="0.02"/>
+              <inertial pos="0 0 0" mass="0.756178654371521" diaginertia="0.0015 0.0008 0.0012"/>
+              <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_shoulder_pitch_link.STL" />
+              <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_shoulder_pitch_link.STL" />
+              <body name="left_shoulder_roll_link" pos="0.0000 0.0780 0.0000" euler="0.0000 0.0000 0.0000">
+                <joint name="left_shoulder_roll_joint" type="hinge" axis="1.0000 0.0000 0.0000" range="0 3.14" damping="0" frictionloss="0" armature="0.02"/>
+                <inertial pos="0 0 0" mass="0.443520000000001" diaginertia="0.0004 0.0004 0.0005"/>
+                <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_shoulder_roll_link.STL" />
+                <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_shoulder_roll_link.STL" />
+                <body name="left_shoulder_yaw_link" pos="0.0000 0.0000 -0.1230" euler="0.0000 0.0000 0.0000">
+                  <joint name="left_shoulder_yaw_joint" type="hinge" axis="0.0000 0.0000 1.0000" range="-0.5 1.5" damping="0" frictionloss="0" armature="0.012"/>
+                  <inertial pos="0 0 0" mass="0.254258436472472" diaginertia="0.0002 0.0003 0.0003"/>
+                  <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_shoulder_yaw_link.STL" />
+                  <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_shoulder_yaw_link.STL" />
+                  <body name="left_elbow_link" pos="0.0000 0.0000 -0.0870" euler="0.0000 0.0000 0.0000">
+                    <joint name="left_elbow_joint" type="hinge" axis="0.0000 -1.0000 0.0000" range="-3 0" damping="0" frictionloss="0" armature="0.012"/>
+                    <inertial pos="0 0 0" mass="0.1836" diaginertia="0.0001 0.0001 0.0001"/>
+                    <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_elbow_link.STL" />
+                    <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_elbow_link.STL" />
+                    <body name="left_wrist_roll_link" pos="0.1025 0.0000 0.0000" euler="0.0000 0.0000 0.0000">
+                      <joint name="left_wrist_roll_joint" type="hinge" axis="-1.0000 0.0000 0.0000" range="-1 1" damping="0" frictionloss="0" armature="0.001"/>
+                      <inertial pos="0 0 0" mass="0.145450242074064" diaginertia="0.0001 0.0001 0.0001"/>
+                      <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_wrist_roll_link.STL" />
+                      <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_wrist_roll_link.STL" />
+                      <body name="left_wrist_yaw_link" pos="0.0355 0.0000 0.0000" euler="0.0000 0.0000 0.0000">
+                        <joint name="left_wrist_yaw_joint" type="hinge" axis="0.0000 0.0000 -1.0000" range="-1 1" damping="0" frictionloss="0" armature="0.001"/>
+                        <inertial pos="0 0 0" mass="0.161163703129156" diaginertia="0.0001 0.0001 0.0001"/>
+                        <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_wrist_yaw_link.STL" />
+                        <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_wrist_yaw_link.STL" />
+                        <body name="left_wrist_pitch_link" pos="0.0600 0.0000 0.0000" euler="0.0000 0.0000 0.0000">
+                          <joint name="left_wrist_pitch_joint" type="hinge" axis="0.0000 1.0000 0.0000" range="-0.5 0.5" damping="0" frictionloss="0" armature="0.001"/>
+                          <inertial pos="0 0 0" mass="1.404" diaginertia="0.0026 0.0037 0.0029"/>
+                          <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_wrist_pitch_link.STL" />
+                          <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_wrist_pitch_link.STL" />
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="right_hip_pitch_link" pos="0.0000 -0.1272 -0.0734" euler="0.5236 0.0000 0.0000">
+        <joint name="right_hip_pitch_joint" type="hinge" axis="0.0000 -1.0000 0.0000" range="-1 1" damping="0" frictionloss="0" armature="0.04"/>
+        <inertial pos="0 0 0" mass="1.48627427894323" diaginertia="0.0044 0.0039 0.0025"/>
+        <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_hip_pitch_link.STL" />
+        <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_hip_pitch_link.STL" />
+        <body name="right_hip_roll_link" pos="0.0450 -0.0628 -0.0779" euler="-0.5236 0.0000 0.0000">
+          <joint name="right_hip_roll_joint" type="hinge" axis="-1.0000 0.0000 0.0000" range="-0.5 1" damping="0" frictionloss="0" armature="0.04"/>
+          <inertial pos="0 0 0" mass="0.657909596250466" diaginertia="0.0017 0.0019 0.0014"/>
+          <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_hip_roll_link.STL" />
+          <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_hip_roll_link.STL" />
+          <body name="right_hip_yaw_link" pos="-0.0450 0.0000 -0.1150" euler="0.0000 0.0000 0.0000">
+            <joint name="right_hip_yaw_joint" type="hinge" axis="0.0000 0.0000 -1.0000" range="-0.5 0.5" damping="0" frictionloss="0" armature="0.02"/>
+            <inertial pos="0 0 0" mass="0.558150874810085" diaginertia="0.0021 0.0018 0.0013"/>
+            <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_hip_yaw_link.STL" />
+            <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_hip_yaw_link.STL" />
+            <body name="right_knee_link" pos="0.0000 -0.0350 -0.1137" euler="0.0000 0.0000 0.0000">
+              <joint name="right_knee_joint" type="hinge" axis="0.0000 1.0000 0.0000" range="-0.5 1" damping="0" frictionloss="0" armature="0.04"/>
+              <inertial pos="0 0 0" mass="3.1242416304843" diaginertia="0.0534 0.0551 0.0042"/>
+              <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_knee_link.STL" />
+              <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_knee_link.STL" />
+              <body name="right_ankle_pitch_link" pos="0.0000 0.0350 -0.4335" euler="0.0000 0.0000 0.0000">
+                <joint name="right_ankle_pitch_joint" type="hinge" axis="0.0000 -1.0000 0.0000" range="-0.5 0.5" damping="0" frictionloss="0" armature="0.012"/>
+                <inertial pos="0 0 0" mass="0.012" diaginertia="1e-6 1e-6 1e-6"/>
+                <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_ankle_pitch_link.STL" />
+                <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_ankle_pitch_link.STL" />
+                <body name="right_ankle_roll_link" pos="0.0000 0.0000 -0.0150" euler="0.0000 0.0000 0.0000">
+                  <joint name="right_ankle_roll_joint" type="hinge" axis="-1.0000 0.0000 0.0000" range="-0.5 0.5" damping="0" frictionloss="0" armature="0.012"/>
+                  <inertial pos="0 0 0" mass="0.2058" diaginertia="0.0001 0.0008 0.0008"/>
+                  <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="right_ankle_roll_link.STL" />
+                  <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="right_ankle_roll_link.STL" />
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="left_hip_pitch_link" pos="0.0000 0.1272 -0.0734" euler="-0.5236 0.0000 0.0000">
+        <joint name="0_left_hip_pitch_joint" type="hinge" axis="0.0000 1.0000 0.0000" range="-1 1" damping="0" frictionloss="0" armature="0.04"/>
+        <inertial pos="0 0 0" mass="1.48627427894323" diaginertia="0.0044 0.0039 0.0025"/>
+        <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_hip_pitch_link.STL" />
+        <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_hip_pitch_link.STL" />
+        <body name="left_hip_roll_link" pos="0.0450 0.0628 -0.0779" euler="0.5236 0.0000 0.0000">
+          <joint name="left_hip_roll_joint" type="hinge" axis="1.0000 0.0000 0.0000" range="-0.5 1" damping="0" frictionloss="0" armature="0.04"/>
+          <inertial pos="0 0 0" mass="0.657909596250466" diaginertia="0.0017 0.0019 0.0014"/>
+          <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_hip_roll_link.STL" />
+          <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_hip_roll_link.STL" />
+          <body name="left_hip_yaw_link" pos="-0.0450 0.0000 -0.1150" euler="0.0000 0.0000 0.0000">
+            <joint name="left_hip_yaw_joint" type="hinge" axis="0.0000 0.0000 -1.0000" range="-0.5 0.5" damping="0" frictionloss="0" armature="0.02"/>
+            <inertial pos="0 0 0" mass="0.558150874810084" diaginertia="0.0021 0.0018 0.0013"/>
+            <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_hip_yaw_link.STL" />
+            <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_hip_yaw_link.STL" />
+            <body name="left_knee_link" pos="0.0000 0.0350 -0.1137" euler="0.0000 0.0000 0.0000">
+              <joint name="left_knee_joint" type="hinge" axis="0.0000 1.0000 0.0000" range="-0.5 1" damping="0" frictionloss="0" armature="0.04"/>
+              <inertial pos="0 0 0" mass="3.1244862763748" diaginertia="0.0535 0.0551 0.0042"/>
+              <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_knee_link.STL" />
+              <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_knee_link.STL" />
+              <body name="left_ankle_pitch_link" pos="0.0000 -0.0350 -0.4335" euler="0.0000 0.0000 0.0000">
+                <joint name="left_ankle_pitch_joint" type="hinge" axis="0.0000 -1.0000 0.0000" range="-0.5 0.5" damping="0" frictionloss="0" armature="0.012"/>
+                <inertial pos="0 0 0" mass="0.012" diaginertia="1e-6 1e-6 1e-6"/>
+                <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_ankle_pitch_link.STL" />
+                <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_ankle_pitch_link.STL" />
+                <body name="left_ankle_roll_link" pos="0.0000 0.0000 -0.0150" euler="0.0000 0.0000 0.0000">
+                  <joint name="left_ankle_roll_joint" type="hinge" axis="-1.0000 0.0000 0.0000" range="-0.5 0.5" damping="0" frictionloss="0" armature="0.012"/>
+                  <inertial pos="0 0 0" mass="0.2058" diaginertia="0.0001 0.0008 0.0008"/>
+                  <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="0.4980 0.4980 0.4980 1.0" group="1" type="mesh" mesh="left_ankle_roll_link.STL" />
+                  <geom pos="0.0000 0.0000 0.0000" euler="0.0000 0.0000 0.0000" rgba="1 0 0 0.5" group="0" type="mesh" mesh="left_ankle_roll_link.STL" />
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <actuator>
+    <position name="waist_yaw_joint_servo" joint="waist_yaw_joint" kp="50" />
+    <position name="waist_roll_joint_servo" joint="waist_roll_joint" kp="50" />
+    <position name="torso_joint_servo" joint="torso_joint" kp="50" />
+    <position name="right_shoulder_pitch_joint_servo" joint="right_shoulder_pitch_joint" kp="50" />
+    <position name="right_shoulder_roll_joint_servo" joint="right_shoulder_roll_joint" kp="50" />
+    <position name="right_shoulder_yaw_joint_servo" joint="right_shoulder_yaw_joint" kp="50" />
+    <position name="right_elbow_joint_servo" joint="right_elbow_joint" kp="50" />
+    <position name="right_wrist_roll_joint_servo" joint="right_wrist_roll_joint" kp="50" />
+    <position name="right_wrist_yaw_joint_servo" joint="right_wrist_yaw_joint" kp="50" />
+    <position name="right_wrist_pitch_joint_servo" joint="right_wrist_pitch_joint" kp="50" />
+    <position name="left_shoulder_pitch_joint_servo" joint="left_shoulder_pitch_joint" kp="50" />
+    <position name="left_shoulder_roll_joint_servo" joint="left_shoulder_roll_joint" kp="50" />
+    <position name="left_shoulder_yaw_joint_servo" joint="left_shoulder_yaw_joint" kp="50" />
+    <position name="left_elbow_joint_servo" joint="left_elbow_joint" kp="50" />
+    <position name="left_wrist_roll_joint_servo" joint="left_wrist_roll_joint" kp="50" />
+    <position name="left_wrist_yaw_joint_servo" joint="left_wrist_yaw_joint" kp="50" />
+    <position name="left_wrist_pitch_joint_servo" joint="left_wrist_pitch_joint" kp="50" />
+    <position name="right_hip_pitch_joint_servo" joint="right_hip_pitch_joint" kp="50" />
+    <position name="right_hip_roll_joint_servo" joint="right_hip_roll_joint" kp="50" />
+    <position name="right_hip_yaw_joint_servo" joint="right_hip_yaw_joint" kp="50" />
+    <position name="right_knee_joint_servo" joint="right_knee_joint" kp="50" />
+    <position name="right_ankle_pitch_joint_servo" joint="right_ankle_pitch_joint" kp="50" />
+    <position name="right_ankle_roll_joint_servo" joint="right_ankle_roll_joint" kp="50" />
+    <position name="0_left_hip_pitch_joint_servo" joint="0_left_hip_pitch_joint" kp="50" />
+    <position name="left_hip_roll_joint_servo" joint="left_hip_roll_joint" kp="50" />
+    <position name="left_hip_yaw_joint_servo" joint="left_hip_yaw_joint" kp="50" />
+    <position name="left_knee_joint_servo" joint="left_knee_joint" kp="50" />
+    <position name="left_ankle_pitch_joint_servo" joint="left_ankle_pitch_joint" kp="50" />
+    <position name="left_ankle_roll_joint_servo" joint="left_ankle_roll_joint" kp="50" />
+  </actuator>
+</mujoco>

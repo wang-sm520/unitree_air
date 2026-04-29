@@ -1,0 +1,28 @@
+# Go2 MuJoCo deployment configuration
+
+# Policy path
+policy_path: "{PROJECT_ROOT}/deploy/pre_train/go2/exported/policy.onnx"
+
+# MuJoCo XML model path
+xml_path: "{PROJECT_ROOT}/source/unitree_model/Go2/mujoco/go2.xml"
+
+# Robot deploy parameters path
+robot_params_path: "{PROJECT_ROOT}/deploy/pre_train/go2/params/deploy.yaml"
+
+# Simulation parameters
+simulation_duration: 60.0
+simulation_dt: 0.002
+control_decimation: 10
+
+# Policy dimensions
+num_actions: 12
+num_obs: 45
+
+# Initial velocity command
+cmd_init: [1.0, 1.0, 0.0]
+
+# Gait period (not used in this policy)
+gait_period: null
+
+# Use sensor observations (if false, will use perfect state instead)
+use_sensor: true

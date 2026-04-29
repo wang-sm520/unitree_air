@@ -1,0 +1,25 @@
+# G1 29DOF MuJoCo deployment configuration
+
+# Policy path
+policy_path: "{PROJECT_ROOT}/deploy/pre_train/g1_29dof/exported/policy.onnx"
+
+# MuJoCo XML model path
+xml_path: "{PROJECT_ROOT}/source/unitree_model/G1/29dof/mujoco/g1_29dof.xml"
+
+# Robot deploy parameters path
+robot_params_path: "{PROJECT_ROOT}/deploy/pre_train/g1_29dof/params/deploy.yaml"
+
+# Simulation parameters
+simulation_duration: 60.0
+simulation_dt: 0.002
+control_decimation: 10
+
+# Policy dimensions
+num_actions: 29
+num_obs: 480
+
+# Initial velocity command
+cmd_init: [1.0, 0.0, 0.0]
+
+# Gait period (not used in this policy)
+gait_period: null
