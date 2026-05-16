@@ -182,7 +182,76 @@
 - 本轮若训稳，可分级恢复：先加回 slope 地形，再小幅加回 reset 扰动（如 ±5N 起）
 - 重点观察 mujoco 下 v=2 m/s 是否仍摔倒；若仍摔倒需排查电机响应、步态周期是否与高速不匹配
 
-**状态：** 训练中
-我想要在'/home/hpf/wsm/unitree_rl/unitree_rl_lab/source/unitree_rl_lab/unitree_rl_lab/tasks/locomotion/robots/ai 
-  r_lj/adjustment.md' 加入上一次参数调试的训练效果：测试sim2real的时候，发现当v=-0.2的时候，可以站立，并且具有一定 
-  的抗扰能力，当向0趋近的时候，抗扰能力减弱 
+**状态：** 训练完成 — sim2real 测试发现：当 v=-0.2 m/s（小幅倒退指令）时，机器人可以站立并具有一定抗扰能力；当指令速度向 0 趋近（接近站立指令）时，抗扰能力明显减弱。推测 zero-velocity 区域在训练数据中分布稀疏 / reward 设计未充分覆盖原地稳定，策略对静态保持鲁棒性不足
+
+---
+
+## 2026-05-06 调整 #6：按电机型号（RS 系列）对齐 effort/kp/kd/armature，并按 GR00T-WBC 公式拆分 per-joint action scale
+
+**本次修改前的训练结果（调整 #5 训练完成）：**
+- sim2real：v=-0.2 m/s 可站立 + 一定抗扰；指令向 0 趋近时抗扰能力减弱
+- 同时发现 `unitree.py` AIR_LJ_CFG 仍引用旧的 `STIFFNESS_7520_14/22`、`STIFFNESS_5020`、`STIFFNESS_4010`、`STIFFNESS_4010`/`DAMPING_4010` 等常量（在文件中已不存在，运行时会 NameError）；effort_limit_sim 与实际电机型号最大扭矩不一致；全 27 关节使用单一 action scale=0.25，未按电机能力区分
+
+**电机 → 关节映射表（来源：硬件电机选型表）：**
+
+| 电机型号 | 最大扭矩 (Nm) | 最大转速 (rad/s) | armature | 对应关节 |
+|---|---|---|---|---|
+| RS00 | 14 | 33 | 0.001 | wrist_roll/pitch/yaw（左右共 6 个） |
+| RS03 | 60 | 20 | 0.02 | waist_yaw / hip_yaw / shoulder_pitch / shoulder_roll |
+| RS04 | 120 | 15 | 0.04 | hip_pitch / hip_roll / knee |
+| RS06 | 36 | 50 | 0.012 | ankle_pitch / ankle_roll / shoulder_yaw / elbow |
+
+**底层公式（顶部常量已定义）：**
+- `kp = armature × NATURAL_FREQ²`，`NATURAL_FREQ = 10·2π ≈ 62.832 rad/s`，`NATURAL_FREQ² ≈ 3947.84`
+- `kd = 2 × DAMPING_RATIO × armature × NATURAL_FREQ`，`DAMPING_RATIO = 2.0`
+- `action_scale = 0.25 × effort_limit / kp`（GR00T-WBC 方法论）
+
+**参数变更：**
+
+### unitree.py — AIR_LJ_CFG 各 actuator 的 effort_limit_sim / stiffness / damping / armature
+
+| Actuator | 电机 | effort 调整前 → 后 | stiffness 调整前 → 后 | damping/armature 调整前 → 后 |
+|---|---|---|---|---|
+| waist_yaw | RS03 | 48 → **60** | STIFFNESS_7520_14（未定义）→ **STIFFNESS_RS03 ≈ 78.96** | 0.02 → **ARMATURE_RS03=0.02** + DAMPING_RS03 ≈ 5.03 |
+| hip_pitch | RS04 | 96 → **120** | STIFFNESS_7520_14 → **STIFFNESS_RS04 ≈ 157.91** | 0.04 → **ARMATURE_RS04=0.04** + DAMPING_RS04 ≈ 10.05 |
+| hip_roll | RS04 | 96 → **120** | STIFFNESS_7520_22 → **STIFFNESS_RS04** | 同上 |
+| hip_yaw | RS03 | 48 → **60** | STIFFNESS_7520_14 → **STIFFNESS_RS03** | ARMATURE_RS03 + DAMPING_RS03 |
+| knee | RS04 | 96 → **120** | STIFFNESS_7520_22 → **STIFFNESS_RS04** | ARMATURE_RS04 + DAMPING_RS04 |
+| ankle (pitch/roll) | RS06 | 29 → **36** | STIFFNESS_5020 → **STIFFNESS_RS06×2.0 ≈ 94.75** | ARMATURE_RS06×2.0 + DAMPING_RS06×2.0（linter 自动修正：脚踝控制硬度 ×2） |
+| shoulder_pitch | RS03 | 48 → **60** | STIFFNESS_5020 → **STIFFNESS_RS03** | ARMATURE_RS03 + DAMPING_RS03 |
+| shoulder_roll | RS03 | 48 → **60** | STIFFNESS_5020 → **STIFFNESS_RS03** | ARMATURE_RS03 + DAMPING_RS03 |
+| shoulder_yaw | RS06 | 29 → **36** | STIFFNESS_5020 → **STIFFNESS_RS06 ≈ 47.37** | ARMATURE_RS06 + DAMPING_RS06 ≈ 3.02 |
+| elbow | RS06 | 29 → **36** | STIFFNESS_5020 → **STIFFNESS_RS06** | ARMATURE_RS06 + DAMPING_RS06 |
+| wrist (roll/pitch/yaw) | RS00 | 10 → **14** | STIFFNESS_5020/4010 dict → **STIFFNESS_RS00 ≈ 3.95**（统一标量） | ARMATURE_RS00=0.001 + DAMPING_RS00 ≈ 0.25 |
+
+`velocity_limit_sim` 经核对已与电机最大转速一致，本轮未修改。
+
+### velocity_env_cfg.py — JointPositionAction.scale（按 GR00T-WBC 公式拆为 per-joint dict）
+
+| 关节正则 | 调整前 (全局) | 调整后 (per-joint) | 备注 |
+|---|---|---|---|
+| `waist_yaw_joint` / `.*hip_pitch_joint` / `.*_hip_roll_joint` / `.*_hip_yaw_joint` / `.*_knee_joint` | 0.25 | **0.1900** | RS03/RS04 effort/kp 比恒为 0.76 |
+| `.*_ankle_pitch_joint` / `.*_ankle_roll_joint` | 0.25 | **0.0950** | ankle kp ×2，scale 减半 |
+| `.*_shoulder_pitch_joint` / `.*_shoulder_roll_joint` / `.*_shoulder_yaw_joint` / `.*_elbow_joint` | 0.25 | **0.1900** | RS03/RS06 同公式 |
+| `.*_wrist_roll_joint` / `.*_wrist_pitch_joint` / `.*_wrist_yaw_joint` | 0.25 | **0.8866** ⚠️ | RS00 armature=0.001 → kp 极低，scale 公式产生大值 |
+
+**目标：**
+1. 修复 `unitree.py` AIR_LJ_CFG 引用未定义常量导致的运行时错误
+2. 让 effort_limit_sim / kp / kd / armature 与硬件电机规格表（RS00/03/04/06）严格对齐，缩小 sim2real gap
+3. 用 GR00T-WBC 物理推导公式（`0.25 × effort/kp`）替代手调统一 scale，使 policy 输出 ±1 映射到的关节目标偏差与电机能力相匹配
+
+**注意事项：**
+- **wrist scale = 0.8866 ≈ ±50.8°/step 偏大**：RS00 armature 被设为 0.001（远小于其他电机），公式直接套用导致腕部 scale 异常。如训练初期出现腕部剧烈震荡或观测发散，建议手动钳到 0.3~0.5。
+- ankle stiffness/damping/armature 整体 ×2.0（`unitree.py:377-379`），对应 scale 自动减半（0.19 → 0.095），脚踝控制更"硬"。
+- `wsm_velocity_cfg.py` 的 action scale 仍是全局 0.25，**未同步**。如使用该 cfg 需另行更新。
+- 本轮调整改变了 PD 增益和动作幅度的整体尺度，旧 checkpoint 不可直接复用，需要重训。
+
+**状态：** 训练完成（policy: `logs/rsl_rl/unitree_lj_velocity/2026-04-28_22-22-50/exported/policy.onnx`） — sim2sim/sim2real 表现明显改善：
+- isaacsim → mujoco 的 gap 肉眼可见缩小（之前 v=2 m/s 必摔，现在体感策略一致性更好）
+- 真机被外部支撑（"按住"）时可稳定站立，有一定基础姿态保持能力
+- 给前进指令时可前迈约两步，但尚不能持续行走（脚步衔接不稳）
+- 主要剩余问题：脱离辅助后无法自主长时间维稳行走；高速段未验证
+- 推测核心改善来自：RS 系列电机 effort/kp/kd/armature 对齐硬件 + per-joint action scale 按电机能力缩放（之前统一 0.25 对 RS00/RS06 都不合适）；ankle ×2 刚度让足端控制更稳
+
+---
+

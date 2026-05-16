@@ -233,7 +233,7 @@ class ObservationsCfg:
         last_action = ObsTerm(func=mdp.last_action)
 
         def __post_init__(self):
-            self.history_length = 5
+            self.history_length = 10
             self.enable_corruption = True
             self.concatenate_terms = True
 
@@ -253,7 +253,7 @@ class ObservationsCfg:
         last_action = ObsTerm(func=mdp.last_action)
 
         def __post_init__(self):
-            self.history_length = 5
+            self.history_length = 10
 
     # privileged observations
     critic: CriticCfg = CriticCfg()

@@ -20,7 +20,7 @@ from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 
-from unitree_rl_lab.assets.robots.unitree import AIR_LJ_CFG as ROBOT_CFG
+from unitree_rl_lab.assets.robots.unitree import AIR_WSM_25DOF_CFG as ROBOT_CFG
 from unitree_rl_lab.assets.robots.unitree import UnitreeArticulationCfg
 from unitree_rl_lab.tasks.locomotion import mdp
 
@@ -202,7 +202,6 @@ class ActionsCfg:
             ".*_hip_yaw_joint": 0.1900,
             ".*_knee_joint": 0.1900,
             ".*_ankle_pitch_joint": 0.0950,
-            ".*_ankle_roll_joint": 0.0950,
             ".*_shoulder_pitch_joint": 0.1900,
             ".*_shoulder_roll_joint": 0.1900,
             ".*_shoulder_yaw_joint": 0.1900,
@@ -233,7 +232,7 @@ class ObservationsCfg:
         last_action = ObsTerm(func=mdp.last_action)
 
         def __post_init__(self):
-            self.history_length = 5
+            self.history_length = 10
             self.enable_corruption = True
             self.concatenate_terms = True
 
@@ -253,7 +252,7 @@ class ObservationsCfg:
         last_action = ObsTerm(func=mdp.last_action)
 
         def __post_init__(self):
-            self.history_length = 5
+            self.history_length = 10
 
     # privileged observations
     critic: CriticCfg = CriticCfg()
@@ -374,15 +373,15 @@ class RewardsCfg:
             "offset": [0.0, 0.5],
             "threshold": 0.55,
             "command_name": "base_velocity",
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle_roll.*"),
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle_pitch.*"),
         },
     )
     feet_slide = RewTerm(
         func=mdp.feet_slide,
         weight=-0.2,
         params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=".*ankle_roll.*"),
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle_roll.*"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*ankle_pitch.*"),
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle_pitch.*"),
         },
     )
     feet_clearance = RewTerm(
@@ -392,7 +391,7 @@ class RewardsCfg:
             "std": 0.05,
             "tanh_mult": 2.0,
             "target_height": 0.15,
-            "asset_cfg": SceneEntityCfg("robot", body_names=".*ankle_roll.*"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*ankle_pitch.*"),
         },
     )
 

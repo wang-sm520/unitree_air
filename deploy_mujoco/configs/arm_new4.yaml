@@ -1,7 +1,7 @@
 # ArmNew4 MuJoCo deployment configuration
 
 # Policy path
-policy_path: "/home/hpf/wsm/unitree_rl/unitree_rl_lab/logs/rsl_rl/unitree_lj_velocity/2026-04-27_18-54-25/exported/policy.onnx"
+policy_path: "/home/hpf/wsm/unitree_rl/unitree_rl_lab/logs/rsl_rl/unitree_lj_velocity/2026-04-28_22-22-50/exported/policy.onnx"
 # MuJoCo XML model path
 #xml_path: "{PROJECT_ROOT}/source/unitree_model/robot/output_mjcf/robot.xml"
 xml_path: "/home/hpf/wsm/unitree_rl/unitree_ros/robots/robot/output_mjcf/robot.xml"
@@ -51,7 +51,7 @@ joint_names: [
 ]
 
 # Initial velocity command
-cmd_init: [0.1, 0.0, 0.0]
+cmd_init: [1.0, 0.0, 0.0]
 
 # Gait period (not used in this policy)
 gait_period: null

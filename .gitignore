@@ -70,3 +70,8 @@ Makefile
 .cache/
 *.bak
 *.tmp
+
+# ===== Local-only large/temp artifacts =====
+deploy_mujoco/*.mp4
+unitree_ros/robots/robot (2)/
+unitree_ros/robots/robot.zip
