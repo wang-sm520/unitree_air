@@ -183,7 +183,12 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP.
 
-    Per-joint action_scale from amp.py:27-39 (29 keys, Isaac order).
+    Per-joint action_scale aligned with bxi amp.py:27-39 (HumanoidGaitPolicyLite).
+    amp.py's action_scale[] is in POLICY order (IsaacLab parse order, position 0 =
+    l_shoulder_y_joint), since it is multiplied element-wise with the ONNX
+    output `last_action`. The dict below assigns amp[POLICY_pos_of_joint] to
+    each joint, which makes the L/R-pair scales perfectly symmetric (13/13)
+    -- matches bxi vendor's positional list in bx_lab_amp/.../bx_29_cfg.py:268.
     use_default_offset=True -> action * scale + default_joint_pos.
     """
 
@@ -191,17 +196,17 @@ class ActionsCfg:
         asset_name="robot",
         joint_names=[".*"],
         scale={
-            "waist_y_joint": 0.231, "waist_x_joint": 0.231, "waist_z_joint": 0.231,
-            "l_hip_y_joint": 0.231, "l_hip_x_joint": 0.231, "l_hip_z_joint": 0.154,
-            "l_knee_y_joint": 0.373, "l_ankle_y_joint": 0.373, "l_ankle_x_joint": 0.213,
-            "r_hip_y_joint": 0.231, "r_hip_x_joint": 0.231, "r_hip_z_joint": 0.213,
-            "r_knee_y_joint": 0.213, "r_ankle_y_joint": 0.373, "r_ankle_x_joint": 0.373,
-            "l_shoulder_y_joint": 0.213, "l_shoulder_x_joint": 0.213, "l_shoulder_z_joint": 0.373,
-            "l_elbow_y_joint": 0.373, "l_wrist_x_joint": 0.231, "l_wrist_y_joint": 0.231,
+            "waist_y_joint": 0.231, "waist_x_joint": 0.154, "waist_z_joint": 0.213,
+            "l_hip_y_joint": 0.213, "l_hip_x_joint": 0.213, "l_hip_z_joint": 0.231,
+            "l_knee_y_joint": 0.213, "l_ankle_y_joint": 0.373, "l_ankle_x_joint": 0.23,
+            "r_hip_y_joint": 0.213, "r_hip_x_joint": 0.213, "r_hip_z_joint": 0.231,
+            "r_knee_y_joint": 0.213, "r_ankle_y_joint": 0.373, "r_ankle_x_joint": 0.23,
+            "l_shoulder_y_joint": 0.231, "l_shoulder_x_joint": 0.231, "l_shoulder_z_joint": 0.373,
+            "l_elbow_y_joint": 0.231, "l_wrist_x_joint": 0.373, "l_wrist_y_joint": 0.373,
             "l_wrist_z_joint": 0.373,
-            "r_shoulder_y_joint": 0.373, "r_shoulder_x_joint": 0.213, "r_shoulder_z_joint": 0.213,
-            "r_elbow_y_joint": 0.373, "r_wrist_x_joint": 0.373, "r_wrist_y_joint": 0.23,
-            "r_wrist_z_joint": 0.23,
+            "r_shoulder_y_joint": 0.231, "r_shoulder_x_joint": 0.231, "r_shoulder_z_joint": 0.373,
+            "r_elbow_y_joint": 0.231, "r_wrist_x_joint": 0.373, "r_wrist_y_joint": 0.373,
+            "r_wrist_z_joint": 0.373,
         },
         use_default_offset=True,
         clip={".*": (-100.0, 100.0)},

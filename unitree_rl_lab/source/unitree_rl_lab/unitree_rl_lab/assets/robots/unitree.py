@@ -306,7 +306,7 @@ AIR_LJ_CFG = UnitreeArticulationCfg(
     # ),
     
     spawn=UnitreeUrdfFileCfg(
-        asset_path=f"{UNITREE_ROS_DIR}/robots/robot_001_5.13/urdf/urdf_v2_5.13.urdf",
+        asset_path=f"{UNITREE_ROS_DIR}/robots/robot_001_5.13/urdf/urdf_v2_5.20.urdf",
     ),
     # spawn=UnitreeUrdfFileCfg(
     #     asset_path=f"{UNITREE_ROS_DIR}/robots/robot/urdf/robot_4.11.urdf",
@@ -323,6 +323,15 @@ AIR_LJ_CFG = UnitreeArticulationCfg(
             ".*_elbow_joint": 0.97,
             "left_wrist_roll_joint": 0.15,
             "right_wrist_roll_joint": -0.15,
+            # ".*hip_pitch_joint": -0.1,
+            # ".*_knee_joint": 0.3,
+            # ".*_ankle_pitch_joint": -0.2,
+            # ".*_shoulder_pitch_joint": 0.3,
+            # "left_shoulder_roll_joint": 0.25,
+            # "right_shoulder_roll_joint": -0.25,
+            # ".*_elbow_joint": 0.97,
+            # "left_wrist_roll_joint": 0.15,
+            # "right_wrist_roll_joint": -0.15,
         },
         joint_vel={".*": 0.0},
     ),

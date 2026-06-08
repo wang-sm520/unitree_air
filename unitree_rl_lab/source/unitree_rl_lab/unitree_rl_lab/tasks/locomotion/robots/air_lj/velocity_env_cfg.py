@@ -35,13 +35,13 @@ COBBLESTONE_ROAD_CFG = terrain_gen.TerrainGeneratorCfg(
     difficulty_range=(0.0, 1.0),
     use_cache=False,
     sub_terrains={
-        "flat": terrain_gen.MeshPlaneTerrainCfg(proportion=0.4),
-        # "rough": terrain_gen.HfRandomUniformTerrainCfg(
-        #     proportion=0.5,
-        #     noise_range=(0.02, 0.06),
-        #     noise_step=0.02,
-        #     border_width=0.25,
-        # ),
+        "flat": terrain_gen.MeshPlaneTerrainCfg(proportion=0.5),
+        "rough": terrain_gen.HfRandomUniformTerrainCfg(
+            proportion=0.5,
+            noise_range=(0.02, 0.06),
+            noise_step=0.02,
+            border_width=0.25,
+        ),
     
     },
 )
@@ -104,10 +104,11 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
-            "static_friction_range": (0.1, 1.0),
-            "dynamic_friction_range": (0.1, 1.0),
+            "static_friction_range": (0.5, 1.2),
+            "dynamic_friction_range": (0.5, 1.2),
             "restitution_range": (0.0, 0.0),
             "num_buckets": 64,
+            "make_consistent": True,
         },
     )
 
@@ -143,7 +144,7 @@ class EventCfg:
                 "z": (0.0, 0.0),
                 "roll": (0.0, 0.0),
                 "pitch": (0.0, 0.0),
-                "yaw": (0.0, 0.0),
+                "yaw": (-0.5, 0.5),
             },
         },
     )
@@ -152,8 +153,8 @@ class EventCfg:
         func=mdp.reset_joints_by_scale,
         mode="reset",
         params={
-            "position_range": (1.0, 1.0),
-            "velocity_range": (-1.0, 1.0),
+            "position_range": (0.5, 1.5),
+            "velocity_range": (0.0, 0.0),
         },
     )
 
@@ -163,6 +164,17 @@ class EventCfg:
         mode="interval",
         interval_range_s=(3.0, 7.0),
         params={"velocity_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5)}},
+    )
+
+    random_force_push = EventTerm(
+        func=mdp.apply_external_force_torque,
+        mode="interval",
+        interval_range_s=(5.0, 10.0),
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names="pelvis_link"),
+            "force_range": (-20.0, 20.0),
+            "torque_range": (0.0, 0.0),
+        },
     )
 
 
@@ -178,10 +190,10 @@ class CommandsCfg:
         heading_command=False,
         debug_vis=True,
         ranges=mdp.UniformLevelVelocityCommandCfg.Ranges(
-            lin_vel_x=(-0.1, 0.1), lin_vel_y=(-0.1, 0.1), ang_vel_z=(0, 0)
+            lin_vel_x=(-0.1, 0.1), lin_vel_y=(-0.1, 0.1), ang_vel_z=(-0.2, 0.2)
         ),
         limit_ranges=mdp.UniformLevelVelocityCommandCfg.Ranges(
-            lin_vel_x=(-0.5, 0.5), lin_vel_y=(-0.3, 0.3), ang_vel_z=(0, 0)
+            lin_vel_x=(-1.0, 1.0), lin_vel_y=(-0.5, 0.5), ang_vel_z=(-1.0, 1.0)
         ),
     )
 
@@ -192,17 +204,20 @@ class ActionsCfg:
 
     # Per-joint action scale = 0.25 * effort_limit / stiffness (GR00T-WBC 公式)
     # 大多数关节 0.19；ankle 因 stiffness ×2 → 0.095；wrist (RS00, 低 armature) → 0.8866
-    JointPositionAction = mdp.JointPositionActionCfg(
+    JointPositionAction = mdp.DelayedJointPositionActionCfg(
         asset_name="robot",
         joint_names=[".*"],
+        min_delay=10,  # 50 ms at sim.dt=0.005
+        max_delay=20,  # 100 ms at sim.dt=0.005
         scale={
             "waist_yaw_joint": 0.1900,
             ".*hip_pitch_joint": 0.1900,
             ".*_hip_roll_joint": 0.1900,
             ".*_hip_yaw_joint": 0.1900,
             ".*_knee_joint": 0.1900,
-            ".*_ankle_pitch_joint": 0.0950,
-            ".*_ankle_roll_joint": 0.0950,
+            # ".*_ankle_pitch_joint": 0.0950,
+            ".*_ankle_pitch_joint": 0.1500,
+            ".*_ankle_roll_joint": 0.1500,
             ".*_shoulder_pitch_joint": 0.1900,
             ".*_shoulder_roll_joint": 0.1900,
             ".*_shoulder_yaw_joint": 0.1900,
@@ -422,6 +437,7 @@ class CurriculumCfg:
 
     terrain_levels = CurrTerm(func=mdp.terrain_levels_vel)
     lin_vel_cmd_levels = CurrTerm(mdp.lin_vel_cmd_levels)
+    ang_vel_cmd_levels = CurrTerm(mdp.ang_vel_cmd_levels)
 
 
 @configclass

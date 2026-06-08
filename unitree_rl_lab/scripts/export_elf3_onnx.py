@@ -72,7 +72,49 @@ from unitree_rl_lab.utils.parser_cfg import parse_env_cfg
 
 
 class _PolicyWrapper(nn.Module):
-    """Wraps `normalizer -> actor_mlp` into a flat module taking [B, obs_dim] -> [B, num_actions]."""
+    """Wraps `frame-major permutation -> normalizer -> actor_mlp` into a flat module.
+
+    Permutation rationale:
+        amp.py supplies a 960-dim obs in FRAME-MAJOR layout:
+            [frame_t-9 (96) | frame_t-8 (96) | ... | frame_t (96)]
+            where each frame = [ang_vel(3) | grav(3) | cmd(3) | qpos(29) | qvel(29) | last_act(29)]
+
+        IsaacLab's ObservationManager produces obs in TERM-MAJOR layout:
+            [ang_vel_t-9..t (30) | grav_t-9..t (30) | cmd_t-9..t (30)
+             | qpos_t-9..t (290) | qvel_t-9..t (290) | last_act_t-9..t (290)]
+
+        The trained network expects term-major. To deploy the network with
+        amp.py (which speaks frame-major), we permute the input.
+
+    The wrapper accepts frame-major obs [B, 960] from amp.py and outputs
+    actions [B, 29].
+    """
+
+    # IsaacLab PolicyCfg term order: ang_vel | grav | cmd | qpos | qvel | last_action
+    _TERM_DIMS = (3, 3, 3, 29, 29, 29)
+    _HISTORY = 10
+    _FRAME_SIZE = sum(_TERM_DIMS)  # 96
+
+    @classmethod
+    def _build_frame_to_term_perm(cls) -> torch.Tensor:
+        """Returns a long tensor perm of length 960 such that
+
+            term_major_obs[..., k] = frame_major_obs[..., perm[k]]
+        """
+        term_offsets_in_frame = []
+        running = 0
+        for d in cls._TERM_DIMS:
+            term_offsets_in_frame.append(running)
+            running += d
+        assert running == cls._FRAME_SIZE
+        perm = []
+        for term_idx, td in enumerate(cls._TERM_DIMS):
+            for frame_idx in range(cls._HISTORY):
+                base = frame_idx * cls._FRAME_SIZE + term_offsets_in_frame[term_idx]
+                for dim_idx in range(td):
+                    perm.append(base + dim_idx)
+        assert len(perm) == cls._HISTORY * cls._FRAME_SIZE == 960
+        return torch.tensor(perm, dtype=torch.long)
 
     def __init__(self, actor: nn.Module, normalizer: nn.Module | None):
         super().__init__()
@@ -80,13 +122,20 @@ class _PolicyWrapper(nn.Module):
         self.actor = copy.deepcopy(actor)
         if hasattr(self.actor, "distribution"):
             del self.actor.distribution
+        # Register the permutation as a non-trainable buffer so it travels with the ONNX graph.
+        self.register_buffer("frame_to_term_perm", self._build_frame_to_term_perm(), persistent=True)
 
     def forward(self, obs: torch.Tensor) -> torch.Tensor:
-        return self.actor(self.normalizer(obs))
+        # obs is amp.py's frame-major layout; rearrange to IsaacLab's term-major before normalizer/actor.
+        obs_term_major = obs.index_select(dim=-1, index=self.frame_to_term_perm)
+        return self.actor(self.normalizer(obs_term_major))
 
 
 def _resolve_actor_module(policy_nn: nn.Module) -> nn.Module:
     """Pick the deterministic actor sub-network from an RSL-RL policy across versions."""
+    # rsl-rl 4.0+: runner.alg.actor is itself an MLPModel with .mlp + .obs_normalizer + .distribution
+    if hasattr(policy_nn, "mlp"):
+        return policy_nn.mlp
     if hasattr(policy_nn, "actor") and hasattr(policy_nn.actor, "mlp"):
         return policy_nn.actor.mlp
     if hasattr(policy_nn, "actor"):
@@ -99,7 +148,8 @@ def _resolve_actor_module(policy_nn: nn.Module) -> nn.Module:
 
 
 def _resolve_normalizer(policy_nn: nn.Module) -> nn.Module | None:
-    for attr in ("actor_obs_normalizer", "student_obs_normalizer", "obs_normalizer"):
+    # rsl-rl 4.0+: normalizer lives on the MLPModel itself
+    for attr in ("obs_normalizer", "actor_obs_normalizer", "student_obs_normalizer"):
         if hasattr(policy_nn, attr):
             return getattr(policy_nn, attr)
     return None
@@ -126,8 +176,14 @@ def main():
     env = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
 
     # Sanity-check the observation dimension matches the bxi contract.
+    # Newer IsaacLab returns a gymnasium Dict obs space ({'policy': Box, 'critic': Box}).
+    # Older versions return a single Box. Handle both.
     obs_space = env.observation_space
-    obs_shape = getattr(obs_space, "shape", None)
+    if hasattr(obs_space, "spaces") and "policy" in obs_space.spaces:
+        policy_space = obs_space.spaces["policy"]
+    else:
+        policy_space = obs_space
+    obs_shape = getattr(policy_space, "shape", None)
     if obs_shape is None or len(obs_shape) < 1:
         raise RuntimeError(f"Unexpected observation_space: {obs_space}")
     obs_dim = int(obs_shape[-1])

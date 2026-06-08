@@ -255,3 +255,134 @@
 
 ---
 
+## 2026-05-18 调整 #7：尝试将初始姿态由轻微弯腿改为中度弯腿（ready stance）— 失败回退
+
+**本次尝试动机：**
+- 原始姿态腿部接近直立（`hip=-0.1, knee=0.3, ankle=-0.2`），希望让 policy 从更接近动态步态的"半屈膝 ready stance"启动
+- 直觉：满足运动学闭环 `hip + ankle + knee = 0`（脚掌水平贴地）+ 同步降低 spawn 高度和 base_height reward 目标，姿态就应静态可稳定
+
+**尝试过的姿态档位（按时间顺序）：**
+
+| 档 | hip / knee / ankle | pos.z | target_height | spawn_check 结果 |
+|---|---|---|---|---|
+| 原始 v1 | -0.1 / 0.3 / -0.2 | 0.9 | 0.78 | ✅ 稳定 |
+| v2 中度弯腿 | -0.3 / **0.7** / -0.4 | 0.82 | 0.70 | ❌ 站 1s 后前倾摔倒（cum_resets=8/4 envs，max tilt 57°）|
+| v3 折中 | -0.25 / **0.6** / -0.35 | 0.83 | 0.74 | ❌ 同上模式，仍前倾摔倒 |
+
+**辅助调试尝试（均无效）：**
+- 提高脚踝刚度 `STIFFNESS_RS06×2 → ×4`（用户手动改动）→ ❌ 失败模式几乎一模一样
+- 在 spawn_check.py 中关闭所有随机化（reset 扰动、摩擦随机化 0.1–1.0、base 质量扰动、push_robot）→ 4 个 env 行为完全同步、仍全摔，**证明非随机化导致**
+
+**失败模式特征：**
+- t=0–0.5s：从 spawn 沉降到自然站立高度，tilt < 3°
+- t=0.5–1.0s：tilt 收敛到 1° 以下，**机器人是稳的**
+- t=1.0–1.5s：tilt 突然从 < 1° 跳到 10°+，**类突变**
+- t=1.5–2.0s：tilt 涨到 50°+，前倾摔倒，触发 `bad_orientation` reset
+- 周期性重演（每 ~2s 一次摔 + reset）
+
+**根因诊断（确定的）：**
+- **不是**手臂前伸导致 CoM 前移（手臂参数未改、视觉上自然下垂）
+- **不是**关节刚度不够（脚踝 ×4 也救不回来）
+- **不是**摩擦滑移（关掉摩擦随机化、4 envs 完全同步仍摔）
+- **不是**域随机化或外力扰动（全部关掉仍摔）
+- **是**：deep knee bend 下的 **Euler buckling（屈曲失稳）**。knee 越弯，腿越接近"软铰链 4-bar linkage"，自重下的临界载荷越低。`knee=0.3` 远在临界点上方（稳）；`knee≥0.6` 已经过临界点（不稳，PD 修正自身产生的瞬态扰动就能把姿态推过临界点 → 雪崩前倒）
+
+**最终决定：**
+- 回退到原始 v1 姿态（`hip=-0.1, knee=0.3, ankle=-0.2`, `pos.z=0.9`, `target_height=0.78`）
+- "更弯腿初始姿态"在当前 URDF + 电机刚度下不可行；若将来仍需深屈膝 ready stance，需要从其他维度入手（更硬的 hip/knee 电机刚度抬升屈曲临界点，或重新设计 URDF 的 link 质量分布）
+
+**遗留产物：**
+- `scripts/rsl_rl/spawn_check.py`：零动作 spawn 稳定性检查脚本（含 verdict 自动判定 + 关闭随机化），后续诊断初始姿态/电机参数问题时可直接复用
+- 脚踝刚度 ×4 的改动状态由用户保留/回退自行决定（未在本次回退中触碰）
+
+**关键经验（写给未来的自己）：**
+- 满足闭环 `hip + ankle + knee = 0` 仅保证**静态**几何脚掌水平、质心几何居中，**不**保证动态稳定 — bent leg 系统在自重 + 有限关节刚度下存在 buckling 临界点
+- 排查 spawn 稳定性问题时务必区分：随机化（摩擦/质量/扰动）导致的非确定性失稳 vs 姿态本身的确定性失稳。诊断办法：把 num_envs ≥ 4，看是否所有 env 行为同步 — 同步 = 确定性问题（姿态本身）；异步 = 随机化问题
+- 想要 deep ready stance 不可行时，候选方案：(a) 减小 knee bend（如 knee=0.5）；(b) 大幅提高 hip/knee 电机刚度（>真机规格，sim2real 风险大）；(c) URDF 重新调质量分布
+
+**状态：** 已回退，原姿态生效
+
+---
+
+## 2026-05-21 调整 #8：参照 bx_29dof 给 reset 关节加 ±50% 域随机化，并对齐 velocity_range
+
+**本次修改前的训练结果（调整 #7 回退完成）：**
+- 姿态已回退到原始 v1（`hip=-0.1, knee=0.3, ankle=-0.2`），训练流程恢复
+- 真机部署仍存在前倾问题：训练默认 `ankle_pitch=-0.2`，但只有把部署侧默认改成 `-0.1` 才能站立行走（疑似真机踝零位偏 +0.1 rad；详见会话讨论，待后续单独处理）
+- 对比 bx_lab_amp 的 `bx_29dof/bx_29_cfg.py:350-357`，发现 bx 在 reset 时给关节位置加了 (0.5, 1.5) 的 scale 域随机化，本仓库 air_lj 这里是 (1.0, 1.0)（无随机）—— 希望借鉴 bx 的做法提升初始姿态多样性
+
+**参数变更：**
+
+### velocity_env_cfg.py — EventCfg.reset_robot_joints
+
+| 参数 | 调整前 | 调整后 | 原因 |
+|------|--------|--------|------|
+| `reset_robot_joints.position_range` | (1.0, 1.0) | **(0.5, 1.5)** | 对照 bx_29dof 同款写法：每次 reset 时关节位置 = `default × U(0.5, 1.5)`，加 ±50% 随机化扩大初始姿态分布，避免策略过拟合到单一起始姿 |
+| `reset_robot_joints.velocity_range` | (-1.0, 1.0) | **(0.0, 0.0)** | 与 bx 对齐：reset 后关节静止，去掉对称速度扰动；之前 (-1.0, 1.0) 会让策略在 reset 瞬间就面对随机关节速度，与 position 同时随机化叠加偏激，先做减法 |
+
+**目标：** 借 bx_29dof 验证过的 reset 随机化方案打散初始姿态分布，看是否能改善真机/mujoco 下的鲁棒性（特别是站立/低速段抗扰）。
+
+**注意事项：**
+- `reset_joints_by_scale` 的 `position_range` 是**对默认关节角的乘性缩放**（不是加性偏移）。默认角接近 0 的关节（hip_roll/yaw、ankle_roll、wrist 几乎都≈0）实际几乎不被随机化；真正受影响的是 hip_pitch / knee / ankle_pitch / shoulder_pitch / elbow 这些默认非零关节。
+- knee 默认 0.3，1.5× 后到 0.45 仍在 #7 验证过的稳定区间（< 0.5 临界点），不会触发 buckling；如果以后改了更深的 ready stance（如 knee=0.5），(0.5, 1.5) 配合可能要重新评估。
+- ankle_pitch 默认 -0.2，1.5× 后到 -0.3、0.5× 后到 -0.1 —— 后者恰好等于真机自然稳定的角度，相当于 reset 分布天然覆盖了真机零位偏差，可能对部署有正面作用（待训练后验证）。
+- 顺手发现并修复 velocity_range 之前的笔误：曾误改成 (0.5, 1.5)（全正速度偏置），本次同步改回 (0.0, 0.0)。
+
+**状态：** 已应用，未训练验证。
+
+---
+
+## 2026-06-08 调整 #9：加强训练侧 DR：action latency、随机力推、地形/摩擦调整
+
+**本次修改前状态：**
+- 训练侧 DR 已有摩擦随机、pelvis 质量随机、reset base pose/velocity 随机、关节 reset 乘性随机、周期性速度 push 和 policy 观测噪声。
+- 缺少控制延迟 / action latency；地形为 flat 70% + rough 30%；摩擦范围为 0.1~1.0；周期性 push 是速度扰动，不是力扰动。
+- 本轮目标是进一步贴近真机控制链路和外界扰动，但仍保持地形难度在基础行走可训练范围内。
+
+**参数变更：**
+
+### velocity_env_cfg.py — 地形比例
+
+| 参数 | 调整前 | 调整后 | 原因 |
+|------|--------|--------|------|
+| `COBBLESTONE_ROAD_CFG.sub_terrains.flat.proportion` | 0.7 | **0.5** | 平地和粗糙地面对半采样，提高 rough 覆盖率 |
+| `COBBLESTONE_ROAD_CFG.sub_terrains.rough.proportion` | 0.3 | **0.5** | 同上；rough 高度仍保持 `noise_range=(0.02, 0.06)` |
+
+### velocity_env_cfg.py — 摩擦随机化
+
+| 参数 | 调整前 | 调整后 | 原因 |
+|------|--------|--------|------|
+| `physics_material.static_friction_range` | (0.1, 1.0) | **(0.5, 1.2)** | 避免过低摩擦导致训练过难，同时覆盖偏高摩擦地面 |
+| `physics_material.dynamic_friction_range` | (0.1, 1.0) | **(0.5, 1.2)** | 与静摩擦范围一致 |
+| `physics_material.make_consistent` | 未设置 | **True** | 保证 dynamic friction 不超过 static friction，更符合物理约束 |
+
+### velocity_env_cfg.py + mdp/delayed_actions.py — 控制延迟 / action latency
+
+| 参数 | 调整前 | 调整后 | 原因 |
+|------|--------|--------|------|
+| `ActionsCfg.JointPositionAction` | `mdp.JointPositionActionCfg` | **`mdp.DelayedJointPositionActionCfg`** | 在 policy action 到关节目标之间加入随机延迟 |
+| `DelayedJointPositionActionCfg.min_delay` | 无 | **10 physics steps = 50 ms** | 当前 `sim.dt=0.005s`，10 步对应 50ms |
+| `DelayedJointPositionActionCfg.max_delay` | 无 | **20 physics steps = 100 ms** | 当前 `sim.dt=0.005s`，20 步对应 100ms |
+
+实现说明：`DelayedJointPositionAction` 继承 Isaac Lab 的 `JointPositionAction`，保留原来的 action scale、default offset 和 joint target 写入方式，只在 `apply_actions()` 前用 `DelayBuffer` 对 processed action 做 per-env 随机延迟。延迟单位是 physics step，不是 policy step；在 `sim.dt=0.005` 下精确对应 50~100ms。
+
+### velocity_env_cfg.py — 随机力推
+
+| 参数 | 调整前 | 调整后 | 原因 |
+|------|--------|--------|------|
+| `EventCfg.random_force_push` | 不存在 | **新增 interval event** | 增加真实外力扰动训练 |
+| `interval_range_s` | 无 | **(5.0, 10.0)** | 每 5~10s 触发一次 |
+| `asset_cfg` | 无 | **pelvis_link** | 推 pelvis，近似外部推身体 |
+| `force_range` | 无 | **(-20.0, 20.0)** | 使用 Isaac Lab 内置 `apply_external_force_torque`，每轴随机采样，近似随机方向 5~20N 推力 |
+| `torque_range` | 无 | **(0.0, 0.0)** | 本轮只加力，不加外力矩 |
+
+**注意事项：**
+- `apply_external_force_torque` 的内置接口按 xyz 每轴均匀采样，本轮实现是“随机方向推力”的近似，不严格保证向量模长一定在 5~20N。
+- 由于该接口写入的是 permanent wrench，interval 触发后外力会保持到下一次该 event 更新；如果后续发现持续外力过强导致步态偏置，可改成自定义 instantaneous force event 或缩小 force_range。
+- action latency 是新增行为，旧 checkpoint 不应直接作为最终部署策略评估，需要重训。
+- rough 比例和控制延迟同时增加训练难度；若初期 bad_orientation 明显上升，可先把 delay 缩到 5~15 physics steps 或 force_range 缩到 (-10, 10)。
+
+**状态：** 已应用，未训练验证。
+
+---
+
